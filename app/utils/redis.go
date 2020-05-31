@@ -9,6 +9,8 @@ import (
 // RedisClient saves connection to redis in instance
 var RedisClient *redis.Client
 
+const RedisKeySeparator = "-rediskeyseparator-"
+
 // InitRedis initializes redis instance
 func InitRedis() {
 	RedisClient = redis.NewClient(&redis.Options{
