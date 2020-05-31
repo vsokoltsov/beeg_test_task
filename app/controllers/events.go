@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/vsokoltsov/beeg/app/utils"
+
 	"github.com/vsokoltsov/beeg/app/channels"
 )
 
@@ -22,9 +24,13 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 	var params EventParams
 	decoder := json.NewDecoder(r.Body)
 	decoder.Decode(&params)
-
+	if params.ID == 0 || len(params.Label) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{"errors": []string{"Invalid parameters"}})
+		return
+	}
 	var eventID = strconv.Itoa(params.ID)
-	var redisLabel = strings.Join([]string{eventID, params.Label}, "-")
+	var redisLabel = strings.Join([]string{eventID, params.Label}, utils.RedisKeySeparator)
 	channels.Labels <- redisLabel
 	result := <-channels.RedisItems
 	json.NewEncoder(w).Encode(map[string]interface{}{"id": params.ID, "label": params.Label, "viewed": result.Value})
