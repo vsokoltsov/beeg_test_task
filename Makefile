@@ -36,17 +36,17 @@ endif
 .PHONY: add_migration
 add_migration:
 	@echo "$@"
-	docker exec -it users_service /bin/sh -c \
+	docker exec -it app /bin/sh -c \
 		"goose -dir /app/app/migrations/ mysql \"${MYSQL_USER}:${MYSQL_PASSWORD}@tcp(${MYSQL_HOST}:3306)/${MYSQL_DATABASE}\" create ${ARGS} sql"
 
 .PHONY: migrate_up
 migrate_up:
 	@echo "$@"
-	docker exec -it users_service /bin/sh -c \
+	docker exec -it app /bin/sh -c \
 		"goose -dir /app/app/migrations/ mysql \"${MYSQL_USER}:${MYSQL_PASSWORD}@tcp(${MYSQL_HOST}:3306)/${MYSQL_DATABASE}\" up"
 
 .PHONY: migrate_down
 migrate_down:
 	@echo "$@"
-	docker exec -it users_service /bin/sh -c \
+	docker exec -it app /bin/sh -c \
 		"goose -dir /app/app/migrations/ mysql \"${MYSQL_USER}:${MYSQL_PASSWORD}@tcp(${MYSQL_HOST}:3306)/${MYSQL_DATABASE}\" down"
