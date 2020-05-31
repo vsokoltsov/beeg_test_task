@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 // DB saves db connection info to instance
@@ -13,7 +15,7 @@ var DB *sqlx.DB
 
 const (
 	developmentDBConString = "DB_CON"
-	testDBString           = "DB_CON_TEST"
+	testDBString           = "DB_TEST_CON"
 )
 
 // InitDB initializes database instance
@@ -59,9 +61,9 @@ func GetDatabaseConnection(env string) string {
 }
 
 // FromCacheToDB saves existing events to database every 10 seconds
-func FromCacheToDB() {
+func FromCacheToDB(interval time.Duration) {
 	for {
-		time.Sleep(time.Second * 10)
+		time.Sleep(time.Second * interval)
 		keys, redisKeysErr := RedisClient.Do("KEYS", "*").Result()
 		if redisKeysErr != nil {
 			log.Fatal(redisKeysErr)
@@ -69,13 +71,16 @@ func FromCacheToDB() {
 		for _, key := range keys.([]interface{}) {
 			stringKey := key.(string)
 			redisVal, _ := RedisClient.Get(stringKey).Int()
-			stringKeySplit := strings.Split(stringKey, "-")
+			stringKeySplit := strings.Split(stringKey, RedisKeySeparator)
+			if len(stringKeySplit) < 2 {
+				continue
+			}
 			id := stringKeySplit[0]
 			label := stringKeySplit[1]
 			if len(id) == 0 || len(label) == 0 {
 				continue
 			}
-			go saveToDB(id, label, redisVal)
+			saveToDB(id, label, redisVal)
 		}
 	}
 }
