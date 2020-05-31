@@ -3,7 +3,6 @@ package main
 import (
 	"os"
 
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/vsokoltsov/beeg/app"
 )
 
