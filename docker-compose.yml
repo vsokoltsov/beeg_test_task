@@ -27,7 +27,7 @@ services:
       dockerfile: ./Dockerfile
     environment:
        - DB_CON=${MYSQL_USER}:${MYSQL_PASSWORD}@tcp(${MYSQL_HOST}:3306)/${MYSQL_DATABASE}
-       - DB_TEST_CON=mysql://beeg:password@db:3306/beeg_test
+       - DB_TEST_CON=root:${MYSQL_ROOT_PASSWORD}@tcp(${MYSQL_HOST}:3306)/${MYSQL_TEST_DATABASE}
     command: reflex -c reflex.conf
     volumes:
       - .:/app
