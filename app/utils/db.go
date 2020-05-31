@@ -2,7 +2,6 @@ package utils
 
 import (
 	"log"
-	"os"
 	"strings"
 	"time"
 
@@ -12,11 +11,15 @@ import (
 // DB saves db connection info to instance
 var DB *sqlx.DB
 
+const (
+	developmentDBConString = "DB_CON"
+	testDBString           = "DB_CON_TEST"
+)
+
 // InitDB initializes database instance
-func InitDB() {
-	connString := os.Getenv("DB_CON")
+func InitDB(dataSource string) {
 	var err error
-	DB, err = sqlx.Connect("mysql", connString)
+	DB, err = sqlx.Connect("mysql", dataSource)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -39,6 +42,19 @@ func saveToDB(id string, label string, counter int) {
 	err := tx.Commit()
 	if err != nil {
 		log.Fatal(err)
+	}
+}
+
+// GetDatabaseConnection returns name of the
+// conection string based on env variable value
+func GetDatabaseConnection(env string) string {
+	switch env {
+	case "development":
+		return developmentDBConString
+	case "test":
+		return testDBString
+	default:
+		return developmentDBConString
 	}
 }
 
