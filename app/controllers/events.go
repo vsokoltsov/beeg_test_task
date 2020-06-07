@@ -1,14 +1,14 @@
 package controllers
 
 import (
-	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
 
-	"github.com/vsokoltsov/beeg/app/utils"
-
+	"github.com/gorilla/websocket"
 	"github.com/vsokoltsov/beeg/app/channels"
+	"github.com/vsokoltsov/beeg/app/utils"
 )
 
 // EventParams stores json parameters of the event
@@ -17,21 +17,29 @@ type EventParams struct {
 	Label string
 }
 
-// CreateEvent create or update existing event
-func CreateEvent(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
 
-	var params EventParams
-	decoder := json.NewDecoder(r.Body)
-	decoder.Decode(&params)
-	if params.ID == 0 || len(params.Label) == 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]interface{}{"errors": []string{"Invalid parameters"}})
+// WsEndpoint provides websockets connection
+func WsEndpoint(w http.ResponseWriter, r *http.Request) {
+	c, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Print("upgrade:", err)
 		return
 	}
-	var eventID = strconv.Itoa(params.ID)
-	var redisLabel = strings.Join([]string{eventID, params.Label}, utils.RedisKeySeparator)
-	channels.Labels <- redisLabel
-	result := <-channels.RedisItems
-	json.NewEncoder(w).Encode(map[string]interface{}{"id": params.ID, "label": params.Label, "viewed": result.Value})
+	defer c.Close()
+	for {
+		var params EventParams
+		// _, message, err := c.ReadMessage()
+		err := c.ReadJSON(&params)
+		if err != nil {
+			log.Println("read:", err)
+			break
+		}
+		var eventID = strconv.Itoa(params.ID)
+		var redisLabel = strings.Join([]string{eventID, params.Label}, utils.RedisKeySeparator)
+		channels.Labels <- redisLabel
+	}
 }

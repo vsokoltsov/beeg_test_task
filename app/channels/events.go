@@ -1,9 +1,15 @@
 package channels
 
 import (
-	"sync"
+	"os"
+	"time"
 
 	"github.com/vsokoltsov/beeg/app/utils"
+)
+
+const (
+	developmentTimeout = 10
+	testTimeout        = 0
 )
 
 // RedisItem represents redis key / value for
@@ -13,34 +19,37 @@ type RedisItem struct {
 	Value int
 }
 
-var mutex = &sync.Mutex{}
-
 // RedisItems provides communication between RedisItems structures
 var RedisItems = make(chan RedisItem)
 
 // Labels store information about labels
 var Labels = make(chan string)
 
+// LabelIncremented store information about labels that were incremented
+var LabelIncremented = make(chan bool)
+var env = os.Getenv("APP_ENV")
+var dateTicker = time.NewTicker(getTimeout(env) * time.Second)
+
 // ManageOperations select and update information from redis
 func ManageOperations() {
 	for {
 		select {
 		case label := <-Labels:
-			currentVal, _ := utils.RedisClient.Get(label).Int()
-
-			mutex.Lock()
-			currentVal++
-			mutex.Unlock()
-
-			resErr := utils.RedisClient.Set(label, currentVal, 0).Err()
-			if resErr != nil {
-				panic(resErr)
-			}
-
-			RedisItems <- RedisItem{
-				Key:   label,
-				Value: currentVal,
-			}
+			utils.RedisClient.Incr(label).Val()
+			LabelIncremented <- true
+		case <-dateTicker.C:
+			utils.FromCacheToDB()
 		}
+	}
+}
+
+func getTimeout(env string) time.Duration {
+	switch env {
+	case "development":
+		return developmentTimeout
+	case "test":
+		return testTimeout
+	default:
+		return developmentTimeout
 	}
 }

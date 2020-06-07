@@ -19,7 +19,7 @@ clean:
 .PHONY: shell
 shell:
 	@echo "$@"
-	docker exec -it users_service \
+	docker exec -it app \
 		/bin/sh
 
 .PHONY: test
