@@ -1,0 +1,23 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+aiohttp = "*"
+databases = "*"
+alembic = "*"
+sqlalchemy = "*"
+pymysql = "*"
+aiomysql = "*"
+ipython = "*"
+config-parser = "*"
+mysql-client = "*"
+mysql-connector-python = "*"
+cryptography = "*"
+
+[dev-packages]
+aiohttp-devtools = "*"
+
+[requires]
+python_version = "3.9"
