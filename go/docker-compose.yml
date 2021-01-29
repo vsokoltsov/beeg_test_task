@@ -10,32 +10,32 @@ services:
     volumes:
       - redis_data:/var/lib/redis
 
-  beeg_db:
-    container_name: beeg_db
+  beeg_db_go:
+    container_name: beeg_db_go
     image: mysql
     restart: always
     env_file: ./.env
     volumes:
       - mysql_data:/var/lib/mysql 
-    expose: 
-      - 3306
+    ports: 
+      - 3306:3306
 
-  app:
-    container_name: app
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-    environment:
-       - DB_CON=${MYSQL_USER}:${MYSQL_PASSWORD}@tcp(${MYSQL_HOST}:3306)/${MYSQL_DATABASE}
-       - DB_TEST_CON=root:${MYSQL_ROOT_PASSWORD}@tcp(${MYSQL_HOST}:3306)/${MYSQL_TEST_DATABASE}
-    command: reflex -c reflex.conf
-    volumes:
-      - .:/app
-    ports:
-      - 8000:8000
-    depends_on:
-      - redis
-      - beeg_db
+  # app:
+  #   container_name: app
+  #   build:
+  #     context: .
+  #     dockerfile: ./Dockerfile
+  #   environment:
+  #      - DB_CON=${MYSQL_USER}:${MYSQL_PASSWORD}@tcp(${MYSQL_HOST}:3306)/${MYSQL_DATABASE}
+  #      - DB_TEST_CON=root:${MYSQL_ROOT_PASSWORD}@tcp(${MYSQL_HOST}:3306)/${MYSQL_TEST_DATABASE}
+  #   command: reflex -c reflex.conf
+  #   volumes:
+  #     - .:/app
+  #   ports:
+  #     - 8000:8000
+  #   depends_on:
+  #     - redis
+  #     - beeg_db
     
 
 volumes:
