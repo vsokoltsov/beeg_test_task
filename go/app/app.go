@@ -19,11 +19,6 @@ type App struct {
 	ConnectionString string
 }
 
-type event struct {
-	id    int
-	label int
-}
-
 // Initialize populates App struct with
 // necessary parameters
 func (app *App) Initialize(env string) {
