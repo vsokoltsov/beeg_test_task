@@ -12,6 +12,11 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
+type eventParams struct {
+	id    int    `json:"id"`
+	label string `json:"label"`
+}
+
 type Handler struct {
 	redisClient *redis.Client
 }
